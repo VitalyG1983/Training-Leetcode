@@ -14,32 +14,42 @@
 
 public class PalindromeNumber_9 {
     public static boolean isPalindrome(int x) {
-        int remains = x;
+        int testNumber = x;
         int countDigits = 0;
 
-        while (remains > 0) {
-            remains /= 10;
+        while (testNumber > 0) {
+            testNumber /= 10;
             countDigits++;
         }
 
-        // or we can use function: int length = (int) (Math.log10(x) + 1);
+        // or we can use function to count length digits of number x: int length = (int) (Math.log10(x) + 1);
         int length = (int) (Math.log10(x) + 1);
 
         int halfDigits = countDigits / 2;
+        // int endHalfNumber = (int) (x % Math.pow(10, halfDigits));  // not work for x = 1001 - because endHalfNumber will be=1, not=01
 
-        int endHalfNumber = (int) (x % Math.pow(10, halfDigits));
         int reversedEndHalfNumber = 0;
-        while (endHalfNumber != 0) {
-            reversedEndHalfNumber = reversedEndHalfNumber * 10 + endHalfNumber % 10;
-            endHalfNumber = endHalfNumber / 10;
+        int tempCountDigits = countDigits;
+        testNumber = x;
+        while (tempCountDigits > halfDigits) {
+            reversedEndHalfNumber = reversedEndHalfNumber * 10 + testNumber % 10;
+            testNumber /= 10;
+            tempCountDigits--;
         }
 
-        int firstHalfNumber = (int) (x / Math.pow(10, countDigits % 2 == 0 ? halfDigits : halfDigits + 1));
+        int firstHalfNumber = x;
+        tempCountDigits = countDigits % 2 == 0 ? countDigits : countDigits - 1;
+        while (tempCountDigits > halfDigits) {
+            firstHalfNumber = firstHalfNumber / 10;
+            tempCountDigits--;
+        }
+
         return firstHalfNumber == reversedEndHalfNumber;
     }
 
     public static void main(String... args) {
         //boolean valid = isPalindrome(2332);
+        //boolean valid = isPalindrome(1001);
         boolean valid = isPalindrome(123454321);
         System.out.println(valid);
     }
