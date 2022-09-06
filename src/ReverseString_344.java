@@ -20,5 +20,8 @@ public class ReverseString_344 {
 
     public static void main(String... args) {
         reverseString(new char[]{'h', 'e', 'l', 'l', 'o'});
+        String s = new String("abc");
+        String df = new String("abc").intern();
+        final boolean b = s == df;
     }
 }
