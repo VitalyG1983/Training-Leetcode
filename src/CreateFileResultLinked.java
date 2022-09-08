@@ -5,15 +5,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.lang.Math.abs;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Nodes.collect;
 
-public class CreateFileResult {
+public class CreateFileResultLinked {
 
 
     public static void givenLargeFileWhenUsingFilesAPI() throws IOException {
@@ -34,42 +37,46 @@ public class CreateFileResult {
     public static void BufferedReader() {
         final int batchSize = 2;
         Path file = Paths.get("/Users/vitalygavrilov/Documents/Java/training/storage/input.txt");
-        String[] firstArray ;
-        String[] secondArray;
+        String[] firstArray;
+        List<String> secondArray = new ArrayList<>();
 
 
         try (BufferedReader bfr = Files.newBufferedReader(file)) {
-            // List<String> batch = new ArrayList<>(batchSize);
             int firstListSize = Integer.parseInt(bfr.readLine());
             firstArray = (String[]) bfr.lines().skip(1).limit(firstListSize + 1).toArray();
-            secondArray = (String[]) bfr.lines().skip(firstListSize + 2).toArray();
+            secondArray = bfr.lines().skip(firstListSize + 2).toList();
 
             SorensenDice sorensenDice = new SorensenDice();
             Map<String, String> outputStrings = new HashMap<>();
+            Map<Integer, Map<Integer, Double>> calcFinalMap = new HashMap<>();
 
             for (int i = 0; i < firstArray.length; i++) {
-         /*   List<String> strings = Arrays.stream(s.split(" ")).toList();
-            for (String str : strings){
-                str.contentEquals(secondList.)
-            }*/
-                Map<Integer, Double> pairsComparity = new HashMap<>();
-                int subtraction = firstArray.length - secondArray.length;
-                boolean pos = subtraction >= 0;
-                for (int j = 0; j < secondArray.length; j++) {
-                //for (int j = secondList.length - 1; j >= 0; j--) {
+                //int subtraction = firstArray.length - secondArray.size();
+                //boolean pos = subtraction >= 0;
+                Double similarity = 0.0;
+                int index = -1;
+                Map<Integer, Double> calcMap = new HashMap<>();
+                for (int j = 0; j < secondArray.size(); j++) {
                     // StringUtils.getJaroWinklerDistance() ;
-                    //if (subtraction >= 0) {
-                        pairsComparity.put(j, sorensenDice.similarity(firstArray[i], secondArray[j]));
+                    double calcSimilarity = sorensenDice.similarity(firstArray[i], secondArray.get(j));
+                    if (calcSimilarity > similarity) {
+                        similarity = calcSimilarity;
+                        index = j;
+                    }
                    /* } else {
                         if (j > abs(subtraction)) {
 
                         }
                     }*/
                 }
-                Map.Entry<Integer, Double> foundedPair = pairsComparity.entrySet().stream().max(Map.Entry.comparingByValue()).orElseThrow();
-                outputStrings.put(firstArray[i], secondArray[foundedPair.getKey()]);
-                secondArray.
+                if (index >= 0) {
+                    calcMap.put(index, similarity);
+                    calcFinalMap.put(i, calcMap);
+                }
             }
+            calcFinalMap.entrySet().stream().collect(Collectors(groupingBy(Map.Entry::getKey,
+                    Collectors(groupingBy(Map.Entry::getKey, Collectors.maxBy(Map.Entry::getValue))))));
+
 
         } catch (IOException e) {
             e.printStackTrace();
