@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.awt.SystemColor.info;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Nodes.collect;
 
@@ -63,11 +64,6 @@ public class CreateFileResultLinked {
                         similarity = calcSimilarity;
                         index = j;
                     }
-                   /* } else {
-                        if (j > abs(subtraction)) {
-
-                        }
-                    }*/
                 }
                 if (index >= 0) {
                     calcMap.put(index, similarity);
@@ -75,7 +71,7 @@ public class CreateFileResultLinked {
                 }
             }
             calcFinalMap.entrySet().stream().collect(Collectors(groupingBy(Map.Entry::getKey,
-                    Collectors(groupingBy(Map.Entry::getKey, Collectors.maxBy(Map.Entry::getValue))))));
+                   // Collectors(groupingBy(Map.Entry::getKey, Collectors.maxBy(Map.Entry::getValue))))));
 
 
         } catch (IOException e) {
