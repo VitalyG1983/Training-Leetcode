@@ -14,8 +14,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  *      Как я вижу решение:
  *        Разбиваю на 2 листа строки. Сортировка листов бесполезна, тк одинаковые слова из 2-х строк листов в предложении могут
  * иметь разный порядок. Чтобы найти наибольшее сходство(similarity) между конкретными строками, нужно проитерироваться по
- * коллекциям без удаления их элементов, сравнивая коэффициент примененной функции Sorensen-Dice к 2-м строкам. При
- * итерации 1-го листа наполняю withoutPairFirstList номерами строк без пары. Номера строк без пары из 2-го
+ * коллекциям без удаления их элементов, сравнивая коэффициент примененной функции Sorensen-Dice к 2-м строкам.
+ * Sorensen-Dice коэффициент был выбран из-за его быстродействия: линейная алгоритмическая сложность алгоритма O(m+n).
+ * При итерации 1-го листа наполняю withoutPairFirstList номерами строк без пары. Номера строк без пары из 2-го
  * листа можно определить после итерации циклов - withoutPairSecondList.
  *        Далее, чтобы подобрать пары из оставшихся "мало похожих/совсем непохожих" строк из листов withoutPairFirstList,
  * withoutPairSecondList можно применить функцию Levenshtein distance, чтобы найти наименьшее количество изменений над
@@ -24,8 +25,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * удаление найденной строки для пары из withoutPairSecondList.
  *
  *                                         Cost
- *      Levenshtein distance              O(m*n)
- *      Sorensen-Dice coefficient         O(m+n)
+ *      Levenshtein distance              O(m*n)  квадратичная сложность
+ *      Sorensen-Dice coefficient         O(m+n)  линейная сложность
  *
  *      где m - длина 1-й строки, n - длина 2-й строки
  * */
@@ -33,6 +34,7 @@ public class StringsSimilarity {
     private static final Map<Integer, Map<Integer, Double>> resultMap = new LinkedHashMap<>();
     private static final String INPUT_PATH = System.getProperty("user.dir") + "/storage/input.txt";
     private static final String OUTPUT_PATH = System.getProperty("user.dir") + "/storage/output.txt";
+    private static final Double LEVENSHTEIN_INITIAL = 1000.0;
 
     private static void createStringPairs() {
         Path inputFile = Paths.get(INPUT_PATH);
@@ -41,7 +43,8 @@ public class StringsSimilarity {
         try (BufferedReader bfr = Files.newBufferedReader(inputFile); BufferedWriter bfw = Files.newBufferedWriter(outputFile)) {
             int firstListSize = Integer.parseInt(bfr.readLine());
             List<String> firstList = bfr.lines().limit(firstListSize).toList();
-            List<String> secondList = bfr.lines().skip(1).toList();
+            int secondListSize = Integer.parseInt(bfr.readLine());
+            List<String> secondList = bfr.lines().limit(secondListSize).toList();
             List<Integer> withoutPairFirstList = new ArrayList<>();
 
             for (int i = 0; i < firstList.size(); i++) {
@@ -62,10 +65,12 @@ public class StringsSimilarity {
                         Map<Integer, Double> innerMap = resultMap.get(indJ);
                         Integer oldKey = innerMap.keySet().stream().findFirst().orElseThrow();
                         Double oldSimilarity = innerMap.get(oldKey);
-                        if (similarity > oldSimilarity) {
+                        if (similarity >= oldSimilarity) {
                             withoutPairFirstList.add(oldKey);
                             innerMap.remove(oldKey);
                             innerMap.put(i, similarity);
+                        } else {
+                            withoutPairFirstList.add(i);
                         }
                     }
                 } else {
@@ -79,7 +84,7 @@ public class StringsSimilarity {
             int withoutPairDiffNum = withoutPairFirstList.size() - withoutPairSecondList.size();
 
             for (int y = 0; y < withoutPairFirstList.size() && !withoutPairSecondList.isEmpty(); y++) {
-                Double distance = 1000.0;
+                Double distance = LEVENSHTEIN_INITIAL;
                 int indZ = -1;
                 for (int z = 0; z < withoutPairSecondList.size(); z++) {
                     Levenshtein dist = new Levenshtein();
@@ -92,7 +97,7 @@ public class StringsSimilarity {
                 putInResultMap(withoutPairFirstList.get(y), distance, withoutPairSecondList.get(indZ));
                 withoutPairSecondList.remove(indZ);
             }
-
+            // if withoutPairDiffNum = 0 - not need to put in to resultMap
             if (withoutPairDiffNum > 0) {
                 for (int j = withoutPairFirstList.size() - withoutPairDiffNum; j < withoutPairFirstList.size(); j++) {
                     //  для 'key' вставляем в 'resultMap' произвольное число < 0 - для него не ищем строку в исходном листе строк
