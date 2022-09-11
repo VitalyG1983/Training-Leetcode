@@ -10,6 +10,8 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 /*          Здравствуйте!
  *      Как я вижу решение:
  *        Разбиваю на 2 листа строки. Сортировка листов бесполезна, тк одинаковые слова из 2-х строк листов в предложении могут
@@ -48,11 +50,19 @@ public class StringsSimilarity {
             List<Integer> withoutPairFirstList = new ArrayList<>();
 
             for (int i = 0; i < firstList.size(); i++) {
+                String firstString = firstList.get(i).trim();
+                if (isBlank(firstString)) {
+                    continue;
+                }
                 Double similarity = 0.0;
                 int indJ = -1;
                 for (int j = 0; j < secondList.size(); j++) {
+                    String secondString = secondList.get(j).trim();
+                    if (isBlank(secondString)) {
+                        continue;
+                    }
                     SorensenDice sorensenDice = new SorensenDice();
-                    double calcSimilarity = sorensenDice.similarity(firstList.get(i), secondList.get(j));
+                    double calcSimilarity = sorensenDice.similarity(firstString, secondString);
                     if (calcSimilarity > similarity) {
                         similarity = calcSimilarity;
                         indJ = j;
